@@ -78,6 +78,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AudioOut.cs" />
     <Compile Include="AudioPlayer.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>

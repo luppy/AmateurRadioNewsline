@@ -52,6 +52,7 @@ namespace AmateurRadioNewsline
             m_audioPlayer.stopHandler += OnAudioStop;
 
             m_filename.Text = Properties.Settings.Default.Filename;
+            m_timeout.Text = Properties.Settings.Default.Timeout.ToString();
         }
 
         private void OnAudioStart(AudioPlayer audioPlayer, TimeSpan length)
@@ -194,5 +195,11 @@ namespace AmateurRadioNewsline
         }
 
         private AudioPlayer m_audioPlayer = new AudioPlayer();
+
+        private void OnTimeoutChanged(object sender, EventArgs e)
+        {
+            TimeSpan timeout;
+            if(TimeSpan.TryParse(m_timeout.Text, out timeout)) m_audioPlayer.timeout = timeout;
+        }
     }
 }

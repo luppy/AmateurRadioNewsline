@@ -208,6 +208,7 @@
             this.m_timeout.Name = "m_timeout";
             this.m_timeout.Size = new System.Drawing.Size(100, 20);
             this.m_timeout.TabIndex = 19;
+            this.m_timeout.TextChanged += new System.EventHandler(this.OnTimeoutChanged);
             // 
             // m_timeLeft
             // 
@@ -275,7 +276,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.m_pttSelector);
             this.Name = "MainWindow";
-            this.Text = "KN6WPU Amateur Newsline Player";
+            this.Text = "KN6WPU Amateur Radio Newsline Player";
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -70,5 +70,17 @@ namespace AmateurRadioNewsline.Properties {
                 this["Filename"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("00:04:50")]
+        public global::System.TimeSpan Timeout {
+            get {
+                return ((global::System.TimeSpan)(this["Timeout"]));
+            }
+            set {
+                this["Timeout"] = value;
+            }
+        }
     }
 }

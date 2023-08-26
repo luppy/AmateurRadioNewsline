@@ -1,4 +1,6 @@
-﻿using NAudio.Wave;
+﻿using NAudio.CoreAudioApi;
+using NAudio.Gui;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,20 +10,29 @@ using System.Speech.AudioFormat;
 using System.Speech.Synthesis;
 using System.Text;
 using System.Threading.Tasks;
-using Timer = System.Windows.Forms.Timer;
 
 namespace AmateurRadioNewsline
 {
     internal class AudioPlayer : INotifyPropertyChanged
     {
+        public AudioPlayer()
+        {
+            m_newsline.startHandler += OnNewslineStart;
+            m_newsline.tickHandler += OnNewslineTick;
+            m_newsline.stopHandler += OnNewslineStop;
+            m_callsign.startHandler += OnCallsignStart;
+            m_callsign.tickHandler += OnCallsignTick;
+            m_callsign.stopHandler += OnCallsignStop;
+        }
+
         public PTT ptt { get; private set; } = new PTT();
 
         public int deviceNumber
         {
             set
             {
-                m_deviceNumber = value;
-                Setup();
+                m_newsline.deviceNumber = value;
+                m_callsign.deviceNumber = value;
             }
         }
 
@@ -29,52 +40,20 @@ namespace AmateurRadioNewsline
         {
             get
             {
-                return m_waveStream;
+                return m_newsline.waveStream;
             }
 
             set
             {
-                m_newWaveStream = value;
-                Setup();
+                m_newsline.waveStream = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("play"));
             }
         }
 
         public bool play
         {
-            get
-            {
-                return m_audioOut?.PlaybackState == PlaybackState.Playing;
-            }
-
-            set
-            {
-                if (m_audioOut != null)
-                {
-                    switch (m_audioOut.PlaybackState)
-                    {
-                        case PlaybackState.Stopped:
-                            if (value) m_audioOut.Play();
-                            break;
-                        case PlaybackState.Playing:
-                            if (!value)
-                            {
-                                m_audioOut.Pause();
-                            }
-                            break;
-                        case PlaybackState.Paused:
-                            if (value)
-                            {
-                                //m_audioOut.Resume();
-                                Setup();// KN6WPU: There is a bug in NAudio when seeking in WaveStream while WaveOut is paused
-                                m_audioOut.Play();
-                            }
-                            break;
-                    }
-                    ptt.value = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("play"));
-                }
-            }
+            get { return m_newsline.play; }
+            set { m_newsline.play = value; }
         }
 
         public TimeSpan timeout
@@ -91,24 +70,23 @@ namespace AmateurRadioNewsline
 
         public void SetNormalizedTime(float t)
         {
-            m_waveStream.CurrentTime = new TimeSpan((long)(m_waveStream.TotalTime.Ticks * t));
+            waveStream.CurrentTime = new TimeSpan((long)(waveStream.TotalTime.Ticks * t));
         }
 
         public void FastForward(TimeSpan t)
         {
-            m_waveStream.CurrentTime += t;
+            waveStream.CurrentTime += t;
         }
 
         public void PlayCallsign(String callsign)
         {
-            if (m_originalWaveStream == null)
+            if(!m_callsign.play)
             {
-                m_originalWaveStream = waveStream;
-                m_originalWasPlaying = play;
-                waveStream = Callsign(callsign);
-                play = true;
+                m_callsign.waveStream = Callsign(callsign);
+                m_callsign.play = true;
             }
         }
+
 
         public delegate void StartHandler(AudioPlayer audioPlayer, TimeSpan length);
         public delegate void TickHandler(AudioPlayer audioPlayer, TimeSpan position);
@@ -119,71 +97,36 @@ namespace AmateurRadioNewsline
         public event StopHandler stopHandler;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private void Setup()
+
+        private void OnNewslineStart(AudioOut audioOut, TimeSpan length)
         {
-            bool wasSetup = m_audioOut != null;
-            bool played = play;
-            bool willSetup = m_deviceNumber is int && m_newWaveStream != null;
-            bool newStream = m_waveStream != m_newWaveStream;
+            ptt.value = true;
+            startHandler?.Invoke(this, length);
+        }
+        private void OnNewslineTick(AudioOut audioOut, TimeSpan position)
+        {
+            tickHandler?.Invoke(this, position);
+        }
+        private void OnNewslineStop(AudioOut audioOut) 
+        {
+            stopHandler?.Invoke(this);
+            ptt.value = m_callsign.play;
+        }
 
-            if (wasSetup)
-            {
-                if (!willSetup)
-                {
-                    ptt.value = false;
-                    m_timer.Dispose();
-                    m_timer = null;
-                }
-
-                m_audioOut.Dispose();
-                m_audioOut = null;
-
-                if (!willSetup || newStream)
-                {
-                    stopHandler(this);
-                }
-            }
-
-            if (newStream)
-            {
-                if(m_waveStream != m_originalWaveStream)
-                {
-                    m_waveStream?.Dispose();
-                }
-                m_waveStream = m_newWaveStream;
-            }
-
-            if (willSetup)
-            {
-                m_audioOut = new WaveOut();
-                m_audioOut.DeviceNumber = m_deviceNumber.Value;
-                m_audioOut.Init(m_waveStream);
-                m_audioOut.PlaybackStopped += OnPlaybackStopped;
-
-                if (!wasSetup || newStream)
-                {
-                    startHandler(this, m_waveStream.TotalTime);
-                }
-
-                if (m_timer == null)
-                {
-                    m_timer = new Timer();
-                    m_timer.Tick += OnTick;
-                    m_timer.Interval = 50;
-                    m_timer.Start();
-                }
-                if(m_waveStream == m_originalWaveStream)
-                {
-                    m_originalWaveStream = null;
-                    played = m_originalWasPlaying;
-                    m_originalWasPlaying = false;
-                }
-                if (played)
-                {
-                    ptt.value = true;
-                    m_audioOut.Play();
-                }
-            }
+        private void OnCallsignStart(AudioOut audioOut, TimeSpan length)
+        {
+            m_newslinePlaying = m_newsline.play;
+            m_newsline.play = false;
+            ptt.value = true;
+        }
+        private void OnCallsignTick(AudioOut audioOut, TimeSpan position)
+        {
+            tickHandler?.Invoke(this, m_newsline.waveStream.CurrentTime);
+        }
+        private void OnCallsignStop(AudioOut audioOut)
+        {
+            m_newsline.play = m_newslinePlaying;
+            ptt.value = m_newslinePlaying;
         }
 
         private static WaveStream Callsign(String callsign)
@@ -208,23 +151,9 @@ namespace AmateurRadioNewsline
             }
         }
 
-        private void OnTick(object sender, EventArgs e)
-        {
-            tickHandler.Invoke(this, m_waveStream.CurrentTime);
-        }
-
-        private void OnPlaybackStopped(object sender, EventArgs e)
-        {
-            waveStream = m_originalWaveStream;
-        }
-
-        private int? m_deviceNumber;
-        private WaveOut m_audioOut;
-        private WaveStream m_waveStream;
-        private WaveStream m_newWaveStream;
-        private WaveStream m_originalWaveStream;
-        private bool m_originalWasPlaying;
-        private Timer m_timer;
+        private AudioOut m_newsline = new AudioOut();
+        private AudioOut m_callsign = new AudioOut();
         private TimeSpan m_timeout = new TimeSpan(0, 5, 0);
+        private bool m_newslinePlaying;
     }
 }

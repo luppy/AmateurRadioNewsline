@@ -37,11 +37,14 @@ namespace AmateurRadioNewsline
             }
             set
             {
-                if (m_ptt?.IsOpen ?? false)
+                if(this.value != value)
                 {
-                    m_ptt.RtsEnable = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("value"));
-                    if (value) m_start = DateTime.Now;
+                    if (m_ptt?.IsOpen ?? false)
+                    {
+                        m_ptt.RtsEnable = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("value"));
+                        if (value) m_start = DateTime.Now;
+                    }
                 }
             }
         }

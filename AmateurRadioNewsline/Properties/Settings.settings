@@ -14,5 +14,8 @@
     <Setting Name="Filename" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="Timeout" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:04:50</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
