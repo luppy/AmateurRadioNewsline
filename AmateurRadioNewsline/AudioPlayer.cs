@@ -10,6 +10,7 @@ using System.Speech.AudioFormat;
 using System.Speech.Synthesis;
 using System.Text;
 using System.Threading.Tasks;
+using Timer = System.Windows.Forms.Timer;
 
 namespace AmateurRadioNewsline
 {
@@ -17,11 +18,13 @@ namespace AmateurRadioNewsline
     {
         public AudioPlayer()
         {
+            m_timer.Tick += OnTick;
+            m_timer.Interval = 50;
+            m_timer.Start();
+
             m_newsline.startHandler += OnNewslineStart;
-            m_newsline.tickHandler += OnNewslineTick;
             m_newsline.stopHandler += OnNewslineStop;
             m_callsign.startHandler += OnCallsignStart;
-            m_callsign.tickHandler += OnCallsignTick;
             m_callsign.stopHandler += OnCallsignStop;
         }
 
@@ -38,16 +41,25 @@ namespace AmateurRadioNewsline
 
         public WaveStream waveStream
         {
-            get
-            {
-                return m_newsline.waveStream;
-            }
+            get { return m_newsline.waveStream; }
 
             set
             {
                 m_newsline.waveStream = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("play"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("currentTimeInSec"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("totalTimeInSec"));
             }
+        }
+
+        public int currentTimeInSec
+        {
+            get { return m_newsline.waveStream?.CurrentTime.Seconds ?? 0; }
+        }
+
+        public int totalTimeInSec
+        {
+            get { return m_newsline.waveStream?.TotalTime.Seconds ?? 0; }
         }
 
         public bool play
@@ -58,14 +70,8 @@ namespace AmateurRadioNewsline
 
         public TimeSpan timeout
         {
-            set
-            {
-                m_timeout = value;
-            }
-            get
-            {
-                return m_timeout - ptt.onAirTime;
-            }
+            set { m_timeout = value; }
+            get { return m_timeout - ptt.onAirTime; }
         }
 
         public void SetNormalizedTime(float t)
@@ -80,7 +86,7 @@ namespace AmateurRadioNewsline
 
         public void PlayCallsign(String callsign)
         {
-            if(!m_callsign.play)
+            if (!m_callsign.play)
             {
                 m_callsign.waveStream = Callsign(callsign);
                 m_callsign.play = true;
@@ -103,11 +109,7 @@ namespace AmateurRadioNewsline
             ptt.value = true;
             startHandler?.Invoke(this, length);
         }
-        private void OnNewslineTick(AudioOut audioOut, TimeSpan position)
-        {
-            tickHandler?.Invoke(this, position);
-        }
-        private void OnNewslineStop(AudioOut audioOut) 
+        private void OnNewslineStop(AudioOut audioOut)
         {
             stopHandler?.Invoke(this);
             ptt.value = m_callsign.play;
@@ -119,14 +121,15 @@ namespace AmateurRadioNewsline
             m_newsline.play = false;
             ptt.value = true;
         }
-        private void OnCallsignTick(AudioOut audioOut, TimeSpan position)
-        {
-            tickHandler?.Invoke(this, m_newsline.waveStream.CurrentTime);
-        }
         private void OnCallsignStop(AudioOut audioOut)
         {
             m_newsline.play = m_newslinePlaying;
             ptt.value = m_newslinePlaying;
+        }
+
+        private void OnTick(object sender, EventArgs e)
+        {
+            tickHandler?.Invoke(this, m_newsline.waveStream?.CurrentTime ?? TimeSpan.Zero);
         }
 
         private static WaveStream Callsign(String callsign)
@@ -155,5 +158,6 @@ namespace AmateurRadioNewsline
         private AudioOut m_callsign = new AudioOut();
         private TimeSpan m_timeout = new TimeSpan(0, 5, 0);
         private bool m_newslinePlaying;
+        private Timer m_timer = new Timer();
     }
 }

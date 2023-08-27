@@ -49,6 +49,7 @@
             this.m_segments = new System.Windows.Forms.ListBox();
             this.m_forward = new System.Windows.Forms.Button();
             this.m_backward = new System.Windows.Forms.Button();
+            this.m_autoPause = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // m_pttSelector
@@ -56,7 +57,7 @@
             this.m_pttSelector.FormattingEnabled = true;
             this.m_pttSelector.Location = new System.Drawing.Point(87, 37);
             this.m_pttSelector.Name = "m_pttSelector";
-            this.m_pttSelector.Size = new System.Drawing.Size(263, 21);
+            this.m_pttSelector.Size = new System.Drawing.Size(312, 21);
             this.m_pttSelector.TabIndex = 0;
             this.m_pttSelector.SelectedIndexChanged += new System.EventHandler(this.OnComPortChanged);
             // 
@@ -74,7 +75,7 @@
             this.m_audioOutSelector.FormattingEnabled = true;
             this.m_audioOutSelector.Location = new System.Drawing.Point(87, 64);
             this.m_audioOutSelector.Name = "m_audioOutSelector";
-            this.m_audioOutSelector.Size = new System.Drawing.Size(263, 21);
+            this.m_audioOutSelector.Size = new System.Drawing.Size(312, 21);
             this.m_audioOutSelector.TabIndex = 3;
             this.m_audioOutSelector.SelectedIndexChanged += new System.EventHandler(this.OnNewAudioOut);
             // 
@@ -82,7 +83,7 @@
             // 
             this.m_filename.Location = new System.Drawing.Point(87, 92);
             this.m_filename.Name = "m_filename";
-            this.m_filename.Size = new System.Drawing.Size(263, 20);
+            this.m_filename.Size = new System.Drawing.Size(312, 20);
             this.m_filename.TabIndex = 4;
             this.m_filename.TextChanged += new System.EventHandler(this.OnFilenameChanged);
             // 
@@ -97,7 +98,7 @@
             // 
             // m_browseButton
             // 
-            this.m_browseButton.Location = new System.Drawing.Point(356, 90);
+            this.m_browseButton.Location = new System.Drawing.Point(405, 90);
             this.m_browseButton.Name = "m_browseButton";
             this.m_browseButton.Size = new System.Drawing.Size(75, 23);
             this.m_browseButton.TabIndex = 6;
@@ -110,7 +111,7 @@
             this.m_progressBar.Enabled = false;
             this.m_progressBar.Location = new System.Drawing.Point(88, 171);
             this.m_progressBar.Name = "m_progressBar";
-            this.m_progressBar.Size = new System.Drawing.Size(262, 23);
+            this.m_progressBar.Size = new System.Drawing.Size(311, 23);
             this.m_progressBar.TabIndex = 8;
             this.m_progressBar.Click += new System.EventHandler(this.OnProgressBarClick);
             // 
@@ -141,7 +142,7 @@
             // 
             // m_idButton
             // 
-            this.m_idButton.Location = new System.Drawing.Point(356, 9);
+            this.m_idButton.Location = new System.Drawing.Point(405, 9);
             this.m_idButton.Name = "m_idButton";
             this.m_idButton.Size = new System.Drawing.Size(46, 23);
             this.m_idButton.TabIndex = 12;
@@ -153,7 +154,7 @@
             // 
             this.m_callsign.Location = new System.Drawing.Point(87, 11);
             this.m_callsign.Name = "m_callsign";
-            this.m_callsign.Size = new System.Drawing.Size(263, 20);
+            this.m_callsign.Size = new System.Drawing.Size(312, 20);
             this.m_callsign.TabIndex = 13;
             this.m_callsign.TextChanged += new System.EventHandler(this.OnCallsignChanged);
             // 
@@ -169,7 +170,7 @@
             // m_saveSettings
             // 
             this.m_saveSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_saveSettings.Location = new System.Drawing.Point(574, 635);
+            this.m_saveSettings.Location = new System.Drawing.Point(601, 646);
             this.m_saveSettings.Name = "m_saveSettings";
             this.m_saveSettings.Size = new System.Drawing.Size(91, 23);
             this.m_saveSettings.TabIndex = 15;
@@ -187,7 +188,7 @@
             // 
             // m_totalTime
             // 
-            this.m_totalTime.Location = new System.Drawing.Point(249, 145);
+            this.m_totalTime.Location = new System.Drawing.Point(299, 144);
             this.m_totalTime.Name = "m_totalTime";
             this.m_totalTime.ReadOnly = true;
             this.m_totalTime.Size = new System.Drawing.Size(100, 20);
@@ -212,7 +213,7 @@
             // 
             // m_timeLeft
             // 
-            this.m_timeLeft.Location = new System.Drawing.Point(249, 118);
+            this.m_timeLeft.Location = new System.Drawing.Point(299, 118);
             this.m_timeLeft.Name = "m_timeLeft";
             this.m_timeLeft.ReadOnly = true;
             this.m_timeLeft.Size = new System.Drawing.Size(100, 20);
@@ -223,7 +224,7 @@
             this.m_segments.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.m_segments.FormattingEnabled = true;
-            this.m_segments.Location = new System.Drawing.Point(466, 12);
+            this.m_segments.Location = new System.Drawing.Point(493, 12);
             this.m_segments.Name = "m_segments";
             this.m_segments.Size = new System.Drawing.Size(199, 602);
             this.m_segments.TabIndex = 22;
@@ -249,11 +250,20 @@
             this.m_backward.UseVisualStyleBackColor = true;
             this.m_backward.Click += new System.EventHandler(this.OnBackwardClick);
             // 
+            // m_autoPause
+            // 
+            this.m_autoPause.Location = new System.Drawing.Point(193, 144);
+            this.m_autoPause.Name = "m_autoPause";
+            this.m_autoPause.ReadOnly = true;
+            this.m_autoPause.Size = new System.Drawing.Size(100, 20);
+            this.m_autoPause.TabIndex = 25;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(677, 670);
+            this.ClientSize = new System.Drawing.Size(704, 681);
+            this.Controls.Add(this.m_autoPause);
             this.Controls.Add(this.m_backward);
             this.Controls.Add(this.m_forward);
             this.Controls.Add(this.m_segments);
@@ -305,6 +315,7 @@
         private System.Windows.Forms.ListBox m_segments;
         private System.Windows.Forms.Button m_forward;
         private System.Windows.Forms.Button m_backward;
+        private System.Windows.Forms.TextBox m_autoPause;
     }
 }
 

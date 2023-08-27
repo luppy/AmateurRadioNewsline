@@ -10,12 +10,6 @@ namespace AmateurRadioNewsline
 {
     class AudioOut
     {
-        public AudioOut()
-        {
-            m_timer.Tick += OnTick;
-            m_timer.Interval = 50;
-        }
-
         public int deviceNumber
         {
             get { return m_out.DeviceNumber; }
@@ -92,12 +86,10 @@ namespace AmateurRadioNewsline
         private void OnStart()
         {
             startHandler?.Invoke(this, m_waveStream.TotalTime);
-            m_timer.Start();
         }
 
         private void OnStop()
         {
-            m_timer.Stop();
             stopHandler?.Invoke(this);
         }
 
@@ -106,13 +98,7 @@ namespace AmateurRadioNewsline
             OnStop();
         }
 
-        private void OnTick(object sender, EventArgs e)
-        {
-            tickHandler?.Invoke(this, m_waveStream.CurrentTime);
-        }
-
         private WaveOut m_out = new WaveOut();
-        private Timer m_timer = new Timer();
         private WaveStream m_waveStream;
     };
 }

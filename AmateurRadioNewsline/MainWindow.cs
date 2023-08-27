@@ -57,9 +57,7 @@ namespace AmateurRadioNewsline
 
         private void OnAudioStart(AudioPlayer audioPlayer, TimeSpan length)
         {
-            m_progressBar.Enabled = true;
-            m_progressBar.Maximum = (int)length.TotalMilliseconds;
-            m_totalTime.Text = length.ToString(@"hh\:mm\:ss\.f");
+            m_autoPause.Text = FindLastBefore(m_audioPlayer.waveStream.CurrentTime + m_audioPlayer.timeout).ToString();
         }
 
         private void OnAudioTick(AudioPlayer audioPlayer, TimeSpan position)
@@ -105,6 +103,10 @@ namespace AmateurRadioNewsline
             try
             {
                 m_audioPlayer.waveStream = new Mp3FileReader(m_filename.Text);
+                m_progressBar.Enabled = true;
+                m_progressBar.Maximum = (int)m_audioPlayer.waveStream.TotalTime.TotalMilliseconds;
+                m_totalTime.Text = m_audioPlayer.waveStream.TotalTime.ToString(@"hh\:mm\:ss\.f");
+
                 Properties.Settings.Default.Filename = m_filename.Text;
                 m_segments.Items.Clear();
                 foreach (var segment in m_audioPlayer.waveStream.Split())
@@ -180,6 +182,20 @@ namespace AmateurRadioNewsline
             m_audioPlayer.waveStream.CurrentTime = newValue;
         }
 
+        private TimeSpan FindLastBefore(TimeSpan t)
+        {
+            TimeSpan result = TimeSpan.Zero;
+            foreach (Segment segment in m_segments.Items)
+            {
+                if (segment.start < t)
+                {
+                    result = segment.start;
+                }
+                else break;
+            }
+            return result;
+        }
+
         private void OnForwardClick(object sender, EventArgs e)
         {
             TimeSpan newValue = m_audioPlayer.waveStream.TotalTime;
@@ -199,7 +215,7 @@ namespace AmateurRadioNewsline
         private void OnTimeoutChanged(object sender, EventArgs e)
         {
             TimeSpan timeout;
-            if(TimeSpan.TryParse(m_timeout.Text, out timeout)) m_audioPlayer.timeout = timeout;
+            if (TimeSpan.TryParse(m_timeout.Text, out timeout)) m_audioPlayer.timeout = timeout;
         }
     }
 }
