@@ -51,7 +51,6 @@ namespace AmateurRadioNewsline
         public delegate void StopHandler(AudioOut audioOut);
 
         public event StartHandler startHandler;
-        public event TickHandler tickHandler;
         public event StopHandler stopHandler;
 
         private void Setup(int deviceNumber, WaveStream waveStream)

@@ -65,7 +65,11 @@ namespace AmateurRadioNewsline
         public bool play
         {
             get { return m_newsline.play; }
-            set { m_newsline.play = value; }
+            set
+            {
+                m_newsline.play = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("play"));
+            }
         }
 
         public TimeSpan timeout

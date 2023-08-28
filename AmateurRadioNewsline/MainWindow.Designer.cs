@@ -47,9 +47,18 @@
             this.m_timeout = new System.Windows.Forms.TextBox();
             this.m_timeLeft = new System.Windows.Forms.TextBox();
             this.m_segments = new System.Windows.Forms.ListBox();
-            this.m_forward = new System.Windows.Forms.Button();
+            this.m_nextPauseButton = new System.Windows.Forms.Button();
             this.m_backward = new System.Windows.Forms.Button();
             this.m_autoPause = new System.Windows.Forms.TextBox();
+            this.m_pauses = new System.Windows.Forms.ListBox();
+            this.m_forwardButton1 = new System.Windows.Forms.Button();
+            this.m_forwardButton2 = new System.Windows.Forms.Button();
+            this.m_forwardButton3 = new System.Windows.Forms.Button();
+            this.m_backwardButton1 = new System.Windows.Forms.Button();
+            this.m_backwardButton2 = new System.Windows.Forms.Button();
+            this.m_backwardButton3 = new System.Windows.Forms.Button();
+            this.m_backwardButton4 = new System.Windows.Forms.Button();
+            this.m_forwardButton4 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // m_pttSelector
@@ -108,18 +117,18 @@
             // 
             // m_progressBar
             // 
-            this.m_progressBar.Enabled = false;
             this.m_progressBar.Location = new System.Drawing.Point(88, 171);
             this.m_progressBar.Name = "m_progressBar";
             this.m_progressBar.Size = new System.Drawing.Size(311, 23);
             this.m_progressBar.TabIndex = 8;
             this.m_progressBar.Click += new System.EventHandler(this.OnProgressBarClick);
+            this.m_progressBar.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnProgressBarMove);
             // 
             // m_playButton
             // 
             this.m_playButton.Appearance = System.Windows.Forms.Appearance.Button;
             this.m_playButton.AutoSize = true;
-            this.m_playButton.Location = new System.Drawing.Point(131, 200);
+            this.m_playButton.Location = new System.Drawing.Point(225, 200);
             this.m_playButton.Name = "m_playButton";
             this.m_playButton.Size = new System.Drawing.Size(37, 23);
             this.m_playButton.TabIndex = 10;
@@ -170,7 +179,7 @@
             // m_saveSettings
             // 
             this.m_saveSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_saveSettings.Location = new System.Drawing.Point(601, 646);
+            this.m_saveSettings.Location = new System.Drawing.Point(850, 646);
             this.m_saveSettings.Name = "m_saveSettings";
             this.m_saveSettings.Size = new System.Drawing.Size(91, 23);
             this.m_saveSettings.TabIndex = 15;
@@ -224,25 +233,25 @@
             this.m_segments.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.m_segments.FormattingEnabled = true;
-            this.m_segments.Location = new System.Drawing.Point(493, 12);
+            this.m_segments.Location = new System.Drawing.Point(742, 12);
             this.m_segments.Name = "m_segments";
             this.m_segments.Size = new System.Drawing.Size(199, 602);
             this.m_segments.TabIndex = 22;
             this.m_segments.DoubleClick += new System.EventHandler(this.OnSegmentsDoubleClick);
             // 
-            // m_forward
+            // m_nextPauseButton
             // 
-            this.m_forward.Location = new System.Drawing.Point(174, 200);
-            this.m_forward.Name = "m_forward";
-            this.m_forward.Size = new System.Drawing.Size(37, 23);
-            this.m_forward.TabIndex = 23;
-            this.m_forward.Text = ">>";
-            this.m_forward.UseVisualStyleBackColor = true;
-            this.m_forward.Click += new System.EventHandler(this.OnForwardClick);
+            this.m_nextPauseButton.Location = new System.Drawing.Point(225, 229);
+            this.m_nextPauseButton.Name = "m_nextPauseButton";
+            this.m_nextPauseButton.Size = new System.Drawing.Size(37, 23);
+            this.m_nextPauseButton.TabIndex = 23;
+            this.m_nextPauseButton.Text = ">>";
+            this.m_nextPauseButton.UseVisualStyleBackColor = true;
+            this.m_nextPauseButton.Click += new System.EventHandler(this.OnForwardClick);
             // 
             // m_backward
             // 
-            this.m_backward.Location = new System.Drawing.Point(88, 200);
+            this.m_backward.Location = new System.Drawing.Point(50, 229);
             this.m_backward.Name = "m_backward";
             this.m_backward.Size = new System.Drawing.Size(37, 23);
             this.m_backward.TabIndex = 24;
@@ -258,14 +267,113 @@
             this.m_autoPause.Size = new System.Drawing.Size(100, 20);
             this.m_autoPause.TabIndex = 25;
             // 
+            // m_pauses
+            // 
+            this.m_pauses.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pauses.FormattingEnabled = true;
+            this.m_pauses.Location = new System.Drawing.Point(537, 12);
+            this.m_pauses.Name = "m_pauses";
+            this.m_pauses.Size = new System.Drawing.Size(199, 602);
+            this.m_pauses.TabIndex = 26;
+            // 
+            // m_forwardButton1
+            // 
+            this.m_forwardButton1.Location = new System.Drawing.Point(268, 200);
+            this.m_forwardButton1.Name = "m_forwardButton1";
+            this.m_forwardButton1.Size = new System.Drawing.Size(38, 23);
+            this.m_forwardButton1.TabIndex = 27;
+            this.m_forwardButton1.Text = "+1s";
+            this.m_forwardButton1.UseVisualStyleBackColor = true;
+            this.m_forwardButton1.Click += new System.EventHandler(this.OnForward1);
+            // 
+            // m_forwardButton2
+            // 
+            this.m_forwardButton2.Location = new System.Drawing.Point(312, 200);
+            this.m_forwardButton2.Name = "m_forwardButton2";
+            this.m_forwardButton2.Size = new System.Drawing.Size(38, 23);
+            this.m_forwardButton2.TabIndex = 28;
+            this.m_forwardButton2.Text = "+5s";
+            this.m_forwardButton2.UseVisualStyleBackColor = true;
+            this.m_forwardButton2.Click += new System.EventHandler(this.OnForward2);
+            // 
+            // m_forwardButton3
+            // 
+            this.m_forwardButton3.Location = new System.Drawing.Point(356, 200);
+            this.m_forwardButton3.Name = "m_forwardButton3";
+            this.m_forwardButton3.Size = new System.Drawing.Size(38, 23);
+            this.m_forwardButton3.TabIndex = 29;
+            this.m_forwardButton3.Text = "+15s";
+            this.m_forwardButton3.UseVisualStyleBackColor = true;
+            this.m_forwardButton3.Click += new System.EventHandler(this.OnForward3);
+            // 
+            // m_backwardButton1
+            // 
+            this.m_backwardButton1.Location = new System.Drawing.Point(181, 200);
+            this.m_backwardButton1.Name = "m_backwardButton1";
+            this.m_backwardButton1.Size = new System.Drawing.Size(38, 23);
+            this.m_backwardButton1.TabIndex = 32;
+            this.m_backwardButton1.Text = "-1s";
+            this.m_backwardButton1.UseVisualStyleBackColor = true;
+            this.m_backwardButton1.Click += new System.EventHandler(this.OnBackward1);
+            // 
+            // m_backwardButton2
+            // 
+            this.m_backwardButton2.Location = new System.Drawing.Point(137, 200);
+            this.m_backwardButton2.Name = "m_backwardButton2";
+            this.m_backwardButton2.Size = new System.Drawing.Size(38, 23);
+            this.m_backwardButton2.TabIndex = 31;
+            this.m_backwardButton2.Text = "-5s";
+            this.m_backwardButton2.UseVisualStyleBackColor = true;
+            this.m_backwardButton2.Click += new System.EventHandler(this.OnBackward2);
+            // 
+            // m_backwardButton3
+            // 
+            this.m_backwardButton3.Location = new System.Drawing.Point(93, 200);
+            this.m_backwardButton3.Name = "m_backwardButton3";
+            this.m_backwardButton3.Size = new System.Drawing.Size(38, 23);
+            this.m_backwardButton3.TabIndex = 30;
+            this.m_backwardButton3.Text = "-15s";
+            this.m_backwardButton3.UseVisualStyleBackColor = true;
+            this.m_backwardButton3.Click += new System.EventHandler(this.OnBackward3);
+            // 
+            // m_backwardButton4
+            // 
+            this.m_backwardButton4.Location = new System.Drawing.Point(49, 200);
+            this.m_backwardButton4.Name = "m_backwardButton4";
+            this.m_backwardButton4.Size = new System.Drawing.Size(38, 23);
+            this.m_backwardButton4.TabIndex = 33;
+            this.m_backwardButton4.Text = "-1m";
+            this.m_backwardButton4.UseVisualStyleBackColor = true;
+            this.m_backwardButton4.Click += new System.EventHandler(this.OnBackward4);
+            // 
+            // m_forwardButton4
+            // 
+            this.m_forwardButton4.Location = new System.Drawing.Point(400, 200);
+            this.m_forwardButton4.Name = "m_forwardButton4";
+            this.m_forwardButton4.Size = new System.Drawing.Size(38, 23);
+            this.m_forwardButton4.TabIndex = 34;
+            this.m_forwardButton4.Text = "+1m";
+            this.m_forwardButton4.UseVisualStyleBackColor = true;
+            this.m_forwardButton4.Click += new System.EventHandler(this.OnForward4);
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(704, 681);
+            this.ClientSize = new System.Drawing.Size(953, 681);
+            this.Controls.Add(this.m_forwardButton4);
+            this.Controls.Add(this.m_backwardButton4);
+            this.Controls.Add(this.m_backwardButton1);
+            this.Controls.Add(this.m_backwardButton2);
+            this.Controls.Add(this.m_backwardButton3);
+            this.Controls.Add(this.m_forwardButton3);
+            this.Controls.Add(this.m_forwardButton2);
+            this.Controls.Add(this.m_forwardButton1);
+            this.Controls.Add(this.m_pauses);
             this.Controls.Add(this.m_autoPause);
             this.Controls.Add(this.m_backward);
-            this.Controls.Add(this.m_forward);
+            this.Controls.Add(this.m_nextPauseButton);
             this.Controls.Add(this.m_segments);
             this.Controls.Add(this.m_timeLeft);
             this.Controls.Add(this.m_timeout);
@@ -313,9 +421,18 @@
         private System.Windows.Forms.TextBox m_timeout;
         private System.Windows.Forms.TextBox m_timeLeft;
         private System.Windows.Forms.ListBox m_segments;
-        private System.Windows.Forms.Button m_forward;
+        private System.Windows.Forms.Button m_nextPauseButton;
         private System.Windows.Forms.Button m_backward;
         private System.Windows.Forms.TextBox m_autoPause;
+        private System.Windows.Forms.ListBox m_pauses;
+        private System.Windows.Forms.Button m_forwardButton1;
+        private System.Windows.Forms.Button m_forwardButton2;
+        private System.Windows.Forms.Button m_forwardButton3;
+        private System.Windows.Forms.Button m_backwardButton1;
+        private System.Windows.Forms.Button m_backwardButton2;
+        private System.Windows.Forms.Button m_backwardButton3;
+        private System.Windows.Forms.Button m_backwardButton4;
+        private System.Windows.Forms.Button m_forwardButton4;
     }
 }
 
