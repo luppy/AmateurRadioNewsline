@@ -71,9 +71,9 @@ namespace AmateurRadioNewsline
             m_ptt = null;
         }
 
-        private SerialPort m_ptt;
+        private SerialPort? m_ptt;
         private DateTime m_start;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

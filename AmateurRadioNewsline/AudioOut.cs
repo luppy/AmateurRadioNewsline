@@ -16,7 +16,7 @@ namespace AmateurRadioNewsline
             set { Setup(value, waveStream); }
         }
 
-        public WaveStream waveStream
+        public WaveStream? waveStream
         {
             get { return m_waveStream; }
             set { Setup(deviceNumber, value); }
@@ -50,16 +50,16 @@ namespace AmateurRadioNewsline
         public delegate void TickHandler(AudioOut audioOut, TimeSpan position);
         public delegate void StopHandler(AudioOut audioOut);
 
-        public event StartHandler startHandler;
-        public event StopHandler stopHandler;
+        public event StartHandler? startHandler;
+        public event StopHandler? stopHandler;
 
-        private void Setup(int deviceNumber, WaveStream waveStream)
+        private void Setup(int deviceNumber, WaveStream? waveStream)
         {
             bool playing = play;
 
             if (playing && waveStream == null)
             {
-                stopHandler(this);
+                stopHandler?.Invoke(this);
             }
 
             if (m_waveStream != waveStream)
@@ -84,7 +84,7 @@ namespace AmateurRadioNewsline
 
         private void OnStart()
         {
-            startHandler?.Invoke(this, m_waveStream.TotalTime);
+            startHandler?.Invoke(this, m_waveStream?.TotalTime ?? TimeSpan.Zero);
         }
 
         private void OnStop()
@@ -92,12 +92,12 @@ namespace AmateurRadioNewsline
             stopHandler?.Invoke(this);
         }
 
-        private void OnPlaybackStopped(object sender, EventArgs e)
+        private void OnPlaybackStopped(object? sender, EventArgs e)
         {
             OnStop();
         }
 
         private WaveOut m_out = new WaveOut();
-        private WaveStream m_waveStream;
+        private WaveStream? m_waveStream;
     };
 }

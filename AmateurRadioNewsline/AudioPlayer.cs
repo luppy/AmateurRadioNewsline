@@ -39,7 +39,7 @@ namespace AmateurRadioNewsline
             }
         }
 
-        public WaveStream waveStream
+        public WaveStream? waveStream
         {
             get { return m_newsline.waveStream; }
 
@@ -80,12 +80,18 @@ namespace AmateurRadioNewsline
 
         public void SetNormalizedTime(float t)
         {
-            waveStream.CurrentTime = new TimeSpan((long)(waveStream.TotalTime.Ticks * t));
+            if (waveStream is WaveStream)
+            {
+                waveStream.CurrentTime = new TimeSpan((long)(waveStream.TotalTime.Ticks * t));
+            }
         }
 
         public void FastForward(TimeSpan t)
         {
-            waveStream.CurrentTime += t;
+            if (waveStream is WaveStream)
+            {
+                waveStream.CurrentTime += t;
+            }
         }
 
         public void PlayCallsign(String callsign)
@@ -102,10 +108,10 @@ namespace AmateurRadioNewsline
         public delegate void TickHandler(AudioPlayer audioPlayer, TimeSpan position);
         public delegate void StopHandler(AudioPlayer audioPlayer);
 
-        public event StartHandler startHandler;
-        public event TickHandler tickHandler;
-        public event StopHandler stopHandler;
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event StartHandler? startHandler;
+        public event TickHandler? tickHandler;
+        public event StopHandler? stopHandler;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
 
         private void OnNewslineStart(AudioOut audioOut, TimeSpan length)
@@ -131,7 +137,7 @@ namespace AmateurRadioNewsline
             ptt.value = m_newslinePlaying;
         }
 
-        private void OnTick(object sender, EventArgs e)
+        private void OnTick(object? sender, EventArgs e)
         {
             tickHandler?.Invoke(this, m_newsline.waveStream?.CurrentTime ?? TimeSpan.Zero);
         }

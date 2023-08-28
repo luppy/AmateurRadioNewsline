@@ -64,7 +64,10 @@ namespace AmateurRadioNewsline
 
         private void OnAudioStart(AudioPlayer audioPlayer, TimeSpan length)
         {
-            SetAutoPause(FindLastBetween(m_audioPlayer.waveStream.CurrentTime, m_audioPlayer.waveStream.CurrentTime + m_audioPlayer.timeout));
+            if (m_audioPlayer.waveStream is WaveStream)
+            {
+                SetAutoPause(FindLastBetween(m_audioPlayer.waveStream.CurrentTime, m_audioPlayer.waveStream.CurrentTime + m_audioPlayer.timeout));
+            }
         }
 
         private void SetAutoPause(Segment segment)
@@ -97,7 +100,9 @@ namespace AmateurRadioNewsline
 
         private void OnComPortChanged(object sender, EventArgs e)
         {
-            m_audioPlayer.ptt.name = Properties.Settings.Default.PTT = m_pttSelector.SelectedItem.ToString();
+            String comPort = m_pttSelector.SelectedItem.ToString() ?? "";
+            Properties.Settings.Default.PTT = comPort;
+            m_audioPlayer.ptt.name = comPort;
         }
 
         private void OnBrowseButtonClick(object sender, EventArgs e)
@@ -172,7 +177,10 @@ namespace AmateurRadioNewsline
                     {
                         if (Control.ModifierKeys == Keys.None)
                         {
-                            m_audioPlayer.waveStream.CurrentTime = segment.start;
+                            if (m_audioPlayer.waveStream is WaveStream)
+                            {
+                                m_audioPlayer.waveStream.CurrentTime = segment.start;
+                            }
                         }
                         else
                         {
@@ -185,16 +193,20 @@ namespace AmateurRadioNewsline
 
         private void OnBackwardClick(object sender, EventArgs e)
         {
-            TimeSpan newValue = TimeSpan.Zero;
-            foreach (Segment segment in m_segments.Items)
+            if (m_audioPlayer.waveStream is WaveStream)
             {
-                if (segment.start < m_audioPlayer.waveStream.CurrentTime)
+                TimeSpan newValue = TimeSpan.Zero;
+                foreach (Segment segment in m_segments.Items)
                 {
-                    newValue = segment.start;
+
+                    if (segment.start < m_audioPlayer.waveStream.CurrentTime)
+                    {
+                        newValue = segment.start;
+                    }
+                    else break;
                 }
-                else break;
+                m_audioPlayer.waveStream.CurrentTime = newValue;
             }
-            m_audioPlayer.waveStream.CurrentTime = newValue;
         }
 
         private Segment FindLastBetween(TimeSpan begin, TimeSpan end)
@@ -207,58 +219,73 @@ namespace AmateurRadioNewsline
                     if (segment.start < end) return segment;
                 }
             }
-            return new Segment() { start = m_audioPlayer.waveStream.TotalTime, duration = TimeSpan.Zero };
+            return new Segment() { start = m_audioPlayer.waveStream?.TotalTime ?? TimeSpan.Zero, duration = TimeSpan.Zero };
         }
 
         private void OnForwardClick(object sender, EventArgs e)
         {
-            m_audioPlayer.waveStream.CurrentTime = m_autoPauseValue - new TimeSpan(0, 0, 5); ;
+            if (m_audioPlayer.waveStream is WaveStream)
+            {
+                m_audioPlayer.waveStream.CurrentTime = m_autoPauseValue - new TimeSpan(0, 0, 5);
+            }
         }
 
         private void OnTimeoutChanged(object sender, EventArgs e)
         {
             TimeSpan timeout;
-            if (TimeSpan.TryParse(m_timeout.Text, out timeout)) m_audioPlayer.timeout = timeout;
+            if (TimeSpan.TryParse(m_timeout.Text, out timeout))
+            {
+                m_audioPlayer.timeout = timeout;
+                Properties.Settings.Default.Timeout = timeout;
+            }
         }
 
         private void OnBackward1(object sender, EventArgs e)
         {
-            m_audioPlayer.waveStream.CurrentTime -= new TimeSpan(0, 0, 1);
+            if (m_audioPlayer.waveStream is WaveStream)
+                m_audioPlayer.waveStream.CurrentTime -= new TimeSpan(0, 0, 1);
         }
 
         private void OnBackward2(object sender, EventArgs e)
         {
-            m_audioPlayer.waveStream.CurrentTime -= new TimeSpan(0, 0, 5);
+            if (m_audioPlayer.waveStream is WaveStream)
+                m_audioPlayer.waveStream.CurrentTime -= new TimeSpan(0, 0, 5);
         }
 
         private void OnBackward3(object sender, EventArgs e)
         {
-            m_audioPlayer.waveStream.CurrentTime -= new TimeSpan(0, 0, 15);
+            if (m_audioPlayer.waveStream is WaveStream)
+                m_audioPlayer.waveStream.CurrentTime -= new TimeSpan(0, 0, 15);
         }
 
         private void OnBackward4(object sender, EventArgs e)
         {
-            m_audioPlayer.waveStream.CurrentTime -= new TimeSpan(0, 1, 0);
+            if (m_audioPlayer.waveStream is WaveStream)
+                m_audioPlayer.waveStream.CurrentTime -= new TimeSpan(0, 1, 0);
         }
 
         private void OnForward1(object sender, EventArgs e)
         {
-            m_audioPlayer.waveStream.CurrentTime += new TimeSpan(0, 0, 1);
+            if (m_audioPlayer.waveStream is WaveStream)
+                m_audioPlayer.waveStream.CurrentTime += new TimeSpan(0, 0, 1);
         }
 
         private void OnForward2(object sender, EventArgs e)
         {
-            m_audioPlayer.waveStream.CurrentTime += new TimeSpan(0, 0, 5);
+            if (m_audioPlayer.waveStream is WaveStream)
+                m_audioPlayer.waveStream.CurrentTime += new TimeSpan(0, 0, 5);
         }
 
         private void OnForward3(object sender, EventArgs e)
         {
-            m_audioPlayer.waveStream.CurrentTime += new TimeSpan(0, 0, 15);
+            if (m_audioPlayer.waveStream is WaveStream)
+                m_audioPlayer.waveStream.CurrentTime += new TimeSpan(0, 0, 15);
         }
 
         private void OnForward4(object sender, EventArgs e)
         {
-            m_audioPlayer.waveStream.CurrentTime += new TimeSpan(0, 1, 0);
+            if (m_audioPlayer.waveStream is WaveStream)
+                m_audioPlayer.waveStream.CurrentTime += new TimeSpan(0, 1, 0);
         }
 
         private void OnProgressBarClick(object sender, EventArgs e)
