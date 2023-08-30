@@ -82,5 +82,17 @@ namespace AmateurRadioNewsline.Properties {
                 this["Timeout"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("00:00:00")]
+        public global::System.TimeSpan IDSkip {
+            get {
+                return ((global::System.TimeSpan)(this["IDSkip"]));
+            }
+            set {
+                this["IDSkip"] = value;
+            }
+        }
     }
 }

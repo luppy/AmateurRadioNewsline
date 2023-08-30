@@ -10,6 +10,11 @@ namespace AmateurRadioNewsline
 {
     class AudioOut
     {
+        public AudioOut()
+        {
+            GlobalTimer.m_timer.Tick += OnTick;
+        }
+
         public int deviceNumber
         {
             get { return m_out.DeviceNumber; }
@@ -24,23 +29,26 @@ namespace AmateurRadioNewsline
 
         public bool play
         {
-            get { return m_out.PlaybackState == PlaybackState.Playing; }
+            get { return m_play; }
             set
             {
-                if (value != play)
+                if (m_play != value)
                 {
                     if (value)
                     {
                         if (m_waveStream != null)
                         {
-                            m_out.Play();
+                            //m_out.Play();
                             OnStart();
                         }
                     }
                     else
                     {
                         OnStop();
-                        m_out.Stop();
+                        if (m_out.PlaybackState != PlaybackState.Stopped)
+                        {
+                            m_out.Stop();
+                        }
                     }
                 }
             }
@@ -55,7 +63,7 @@ namespace AmateurRadioNewsline
 
         private void Setup(int deviceNumber, WaveStream? waveStream)
         {
-            bool playing = play;
+            bool playing = m_out.PlaybackState == PlaybackState.Playing;
 
             if (playing && waveStream == null)
             {
@@ -84,11 +92,14 @@ namespace AmateurRadioNewsline
 
         private void OnStart()
         {
+            m_play = true;
+            m_playStarted = DateTime.Now;
             startHandler?.Invoke(this, m_waveStream?.TotalTime ?? TimeSpan.Zero);
         }
 
         private void OnStop()
         {
+            m_play = false;
             stopHandler?.Invoke(this);
         }
 
@@ -97,7 +108,22 @@ namespace AmateurRadioNewsline
             OnStop();
         }
 
+        private void OnTick(object? sender, EventArgs e)
+        {
+            if (m_play && m_out.PlaybackState != PlaybackState.Playing && DateTime.Now - m_playStarted > new TimeSpan(0, 0, 1))
+            {
+                m_out.Play();
+
+                if(m_out.PlaybackState != PlaybackState.Playing) // better safe than sorry
+                {
+                    OnStop();
+                }
+            }
+        }
+
         private WaveOut m_out = new WaveOut();
         private WaveStream? m_waveStream;
+        private bool m_play = false;
+        private DateTime m_playStarted;
     };
 }

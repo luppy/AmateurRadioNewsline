@@ -17,5 +17,8 @@
     <Setting Name="Timeout" Type="System.TimeSpan" Scope="User">
       <Value Profile="(Default)">00:04:50</Value>
     </Setting>
+    <Setting Name="IDSkip" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:00:00</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

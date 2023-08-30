@@ -14,13 +14,22 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace AmateurRadioNewsline
 {
+    internal class GlobalTimer
+    {
+        static GlobalTimer()
+        {
+            m_timer.Interval = 50;
+            m_timer.Start();
+        }
+
+        public static Timer m_timer = new Timer();
+    }
+
     internal class AudioPlayer : INotifyPropertyChanged
     {
         public AudioPlayer()
         {
-            m_timer.Tick += OnTick;
-            m_timer.Interval = 50;
-            m_timer.Start();
+            GlobalTimer.m_timer.Tick += OnTick;
 
             m_newsline.startHandler += OnNewslineStart;
             m_newsline.stopHandler += OnNewslineStop;
@@ -98,7 +107,8 @@ namespace AmateurRadioNewsline
         {
             if (!m_callsign.play)
             {
-                m_callsign.waveStream = Callsign(callsign);
+                //m_callsign.waveStream = Callsign(callsign);
+                m_callsign.waveStream = Callsign2("-.- -. -.... .-- .--. ..-", 880, 3150);
                 m_callsign.play = true;
             }
         }
@@ -111,6 +121,7 @@ namespace AmateurRadioNewsline
         public event StartHandler? startHandler;
         public event TickHandler? tickHandler;
         public event StopHandler? stopHandler;
+        public event StopHandler? idDoneHandler;
         public event PropertyChangedEventHandler? PropertyChanged;
 
 
@@ -135,6 +146,7 @@ namespace AmateurRadioNewsline
         {
             m_newsline.play = m_newslinePlaying;
             ptt.value = m_newslinePlaying;
+            idDoneHandler?.Invoke(this);
         }
 
         private void OnTick(object? sender, EventArgs e)
@@ -164,10 +176,47 @@ namespace AmateurRadioNewsline
             }
         }
 
+        private static WaveStream Callsign2(String morse, float frequency, int unitLength)
+        {
+            var stream = new MemoryStream();
+
+            float dt = frequency / 44100;
+            float t = 0;
+            foreach (char c in morse)
+            {
+                int length = unitLength;
+                int amplitude = 32767;
+                switch (c)
+                {
+                    case '.': break;
+                    case '-': length *= 3; break;
+                    case ' ': amplitude = 0; break;
+                    default: length = 0; break;
+                }
+
+                for (int i = length; i-- > 0;)
+                {
+                    short sample = (short)Math.Round(Math.Sin(t * Math.PI * 2) * amplitude);
+                    stream.WriteByte((byte)(sample & 0xff));
+                    stream.WriteByte((byte)(sample >> 8));
+                    t = (t + dt) % 1;
+                }
+                for (int i = unitLength; i-- > 0;)
+                {
+                    stream.WriteByte(0);
+                    stream.WriteByte(0);
+                }
+            }
+
+            stream.Seek(0, SeekOrigin.Begin);
+            return new RawSourceWaveStream(stream, new WaveFormat(44100, 16, 1));
+        }
+
+
+
         private AudioOut m_newsline = new AudioOut();
         private AudioOut m_callsign = new AudioOut();
         private TimeSpan m_timeout = new TimeSpan(0, 5, 0);
         private bool m_newslinePlaying;
-        private Timer m_timer = new Timer();
     }
 }
