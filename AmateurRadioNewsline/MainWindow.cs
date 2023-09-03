@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Speech.Synthesis;
 using System.Speech.AudioFormat;
+using System.CodeDom;
+using System.Xml.Serialization;
 
 namespace AmateurRadioNewsline
 {
@@ -43,14 +45,6 @@ namespace AmateurRadioNewsline
 
             m_callsign.Text = Properties.Settings.Default.Callsign;
 
-            m_pauses.Items.Add(new Segment() { start = new TimeSpan(0, 0, 4, 20, 855), duration = new TimeSpan(0, 0, 0, 0, 333) });
-            m_pauses.Items.Add(new Segment() { start = new TimeSpan(0, 0, 6, 38, 965), duration = new TimeSpan(0, 0, 0, 0, 809) });
-            m_pauses.Items.Add(new Segment() { start = new TimeSpan(0, 0, 10, 01, 873), duration = new TimeSpan(0, 0, 0, 0, 408) });
-            //m_pauses.Items.Add(new Segment() { start = new TimeSpan(0, 0, 10, 07, 031), duration = new TimeSpan(0, 0, 0, 0, 384) });
-            m_pauses.Items.Add(new Segment() { start = new TimeSpan(0, 0, 13, 05, 309), duration = new TimeSpan(0, 0, 0, 0, 390) });
-            m_pauses.Items.Add(new Segment() { start = new TimeSpan(0, 0, 17, 55, 497), duration = new TimeSpan(0, 0, 0, 0, 302) });
-
-
             m_testPTT.DataBindings.Add("Enabled", m_audioPlayer.ptt, "open");
             m_testPTT.DataBindings.Add("Checked", m_audioPlayer.ptt, "value");
             m_playButton.DataBindings.Add("Checked", m_audioPlayer, "play");
@@ -63,6 +57,14 @@ namespace AmateurRadioNewsline
             m_filename.Text = Properties.Settings.Default.Filename;
             m_timeout.Text = Properties.Settings.Default.Timeout.ToString();
             m_IDSkip.Text = Properties.Settings.Default.IDSkip.ToString(@"hh\:mm\:ss\.fff");
+
+            if (DeserializeObject<List<Segment>>(Properties.Settings.Default.Pauses) is List<Segment> pauses)
+            {
+                foreach (var pause in pauses)
+                {
+                    m_pauses.Items.Add(pause);
+                }
+            }
         }
 
         private Segment FindLastBetween(TimeSpan begin, TimeSpan end)
@@ -139,11 +141,30 @@ namespace AmateurRadioNewsline
             }
         }
 
+        private List<Segment>? GetPauses()
+        {
+            if (m_filenameValid)
+            {
+                if (Properties.Settings.Default.Pauses == null)
+                {
+                    //Properties.Settings.Default.Pauses = new Pauses();
+                }
+                //if (!pauses.ContainsKey(m_filename.Text))
+                //{
+                //    pauses.Add(m_filename.Text, new List<Segment>());
+                //}
+                //return pauses[m_filename.Text];
+            }
+            return null;
+        }
+
         private void OnFilenameChanged(object sender, EventArgs e)
         {
+            m_filenameValid = false;
             try
             {
                 m_audioPlayer.waveStream = new Mp3FileReader(m_filename.Text);
+                m_filenameValid = true;
                 m_progressBar.Maximum = (int)m_audioPlayer.waveStream.TotalTime.TotalMilliseconds;
                 m_totalTime.Text = m_audioPlayer.waveStream.TotalTime.ToString(@"hh\:mm\:ss\.f");
 
@@ -152,6 +173,15 @@ namespace AmateurRadioNewsline
                 foreach (var segment in m_audioPlayer.waveStream.Split())
                 {
                     m_segments.Items.Add(segment);
+                }
+
+                m_pauses.Items.Clear();
+                if (GetPauses() is List<Segment> pauses)
+                {
+                    foreach (var pause in pauses)
+                    {
+                        m_pauses.Items.Add(pause);
+                    }
                 }
             }
             catch
@@ -180,8 +210,29 @@ namespace AmateurRadioNewsline
             Properties.Settings.Default.Callsign = m_callsign.Text;
         }
 
+        static string SerializeObject<T>(T obj) where T : notnull
+        {
+            using (StringWriter textWriter = new StringWriter())
+            {
+                new XmlSerializer(obj.GetType()).Serialize(textWriter, obj);
+                return textWriter.ToString();
+            }
+        }
+        static T? DeserializeObject<T>(String s)
+        {
+            try
+            {
+                using (StringReader textReader = new StringReader(s))
+                    if (new XmlSerializer(typeof(T)).Deserialize(textReader) is T result)
+                        return result;
+            }
+            catch { }
+            return default(T);
+        }
+
         private void OnSaveSettings(object sender, EventArgs e)
         {
+            Properties.Settings.Default.Pauses = SerializeObject(m_pauses.Items.Cast<Segment>().ToList());
             Properties.Settings.Default.Save();
         }
 
@@ -351,9 +402,20 @@ namespace AmateurRadioNewsline
             }
         }
 
-
-
         private AudioPlayer m_audioPlayer = new AudioPlayer();
         private TimeSpan m_autoPauseValue = TimeSpan.MaxValue;
+        private bool m_filenameValid = false;
+
+        private void OnAddPause(object sender, EventArgs e)
+        {
+            if (m_segments.SelectedItem is Segment segment)
+            {
+                if (!m_pauses.Items.Contains(segment))
+                {
+                    m_pauses.Items.Add(segment);
+                }
+                m_pauses.SelectedItem = segment;
+            }
+        }
     }
 }

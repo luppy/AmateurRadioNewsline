@@ -61,6 +61,8 @@
             m_forwardButton4 = new Button();
             m_IDSkip = new TextBox();
             m_forward = new Button();
+            m_addButton = new Button();
+            m_removeButton = new Button();
             SuspendLayout();
             // 
             // m_pttSelector
@@ -193,7 +195,7 @@
             // m_saveSettings
             // 
             m_saveSettings.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            m_saveSettings.Location = new Point(992, 745);
+            m_saveSettings.Location = new Point(752, 746);
             m_saveSettings.Margin = new Padding(4, 3, 4, 3);
             m_saveSettings.Name = "m_saveSettings";
             m_saveSettings.Size = new Size(106, 27);
@@ -253,10 +255,11 @@
             m_segments.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             m_segments.FormattingEnabled = true;
             m_segments.ItemHeight = 15;
-            m_segments.Location = new Point(866, 14);
+            m_segments.Location = new Point(618, 10);
             m_segments.Margin = new Padding(4, 3, 4, 3);
             m_segments.Name = "m_segments";
-            m_segments.Size = new Size(231, 694);
+            m_segments.Size = new Size(240, 724);
+            m_segments.Sorted = true;
             m_segments.TabIndex = 22;
             m_segments.DoubleClick += OnSegmentsDoubleClick;
             // 
@@ -293,13 +296,14 @@
             // 
             // m_pauses
             // 
-            m_pauses.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            m_pauses.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             m_pauses.FormattingEnabled = true;
             m_pauses.ItemHeight = 15;
-            m_pauses.Location = new Point(626, 14);
+            m_pauses.Location = new Point(102, 310);
             m_pauses.Margin = new Padding(4, 3, 4, 3);
             m_pauses.Name = "m_pauses";
-            m_pauses.Size = new Size(231, 694);
+            m_pauses.Size = new Size(240, 424);
+            m_pauses.Sorted = true;
             m_pauses.TabIndex = 26;
             m_pauses.SelectedIndexChanged += OnPausesSelected;
             m_pauses.DoubleClick += OnPausesDoubleClick;
@@ -412,11 +416,36 @@
             m_forward.UseVisualStyleBackColor = true;
             m_forward.Click += OnForward;
             // 
+            // m_addButton
+            // 
+            m_addButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            m_addButton.Location = new Point(567, 662);
+            m_addButton.Margin = new Padding(4, 3, 4, 3);
+            m_addButton.Name = "m_addButton";
+            m_addButton.Size = new Size(43, 27);
+            m_addButton.TabIndex = 37;
+            m_addButton.Text = "<---";
+            m_addButton.UseVisualStyleBackColor = true;
+            m_addButton.Click += OnAddPause;
+            // 
+            // m_removeButton
+            // 
+            m_removeButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            m_removeButton.Location = new Point(350, 662);
+            m_removeButton.Margin = new Padding(4, 3, 4, 3);
+            m_removeButton.Name = "m_removeButton";
+            m_removeButton.Size = new Size(43, 27);
+            m_removeButton.TabIndex = 38;
+            m_removeButton.Text = "--->";
+            m_removeButton.UseVisualStyleBackColor = true;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1112, 786);
+            ClientSize = new Size(872, 787);
+            Controls.Add(m_removeButton);
+            Controls.Add(m_addButton);
             Controls.Add(m_forward);
             Controls.Add(m_IDSkip);
             Controls.Add(m_forwardButton4);
@@ -492,6 +521,8 @@
         private Button m_forwardButton4;
         private TextBox m_IDSkip;
         private Button m_forward;
+        private Button m_addButton;
+        private Button m_removeButton;
     }
 }
 
