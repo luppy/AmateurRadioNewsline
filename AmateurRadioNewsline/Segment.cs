@@ -14,7 +14,7 @@ namespace AmateurRadioNewsline
 
         public override String ToString()
         {
-            return $"{start:h\\:mm\\:ss\\.f} / {duration:s\\.fff}";
+            return $"{start:h\\:mm\\:ss\\.f} / {duration:mm\\:ss\\.fff}";
         }
     }
 }

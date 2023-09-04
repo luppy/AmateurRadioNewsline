@@ -98,12 +98,12 @@ namespace AmateurRadioNewsline.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Pauses {
+        public string Splits {
             get {
-                return ((string)(this["Pauses"]));
+                return ((string)(this["Splits"]));
             }
             set {
-                this["Pauses"] = value;
+                this["Splits"] = value;
             }
         }
     }

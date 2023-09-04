@@ -15,6 +15,7 @@ using System.Speech.Synthesis;
 using System.Speech.AudioFormat;
 using System.CodeDom;
 using System.Xml.Serialization;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace AmateurRadioNewsline
 {
@@ -58,13 +59,11 @@ namespace AmateurRadioNewsline
             m_timeout.Text = Properties.Settings.Default.Timeout.ToString();
             m_IDSkip.Text = Properties.Settings.Default.IDSkip.ToString(@"hh\:mm\:ss\.fff");
 
-            if (Properties.Settings.Default.Pauses.Deserialize<List<Segment>>() is List<Segment> pauses)
-            {
-                foreach (var pause in pauses)
-                {
-                    m_pauses.Items.Add(pause);
-                }
-            }
+            if (Properties.Settings.Default.Splits.Deserialize<List<TimeSpan>>() is List<TimeSpan> splits)
+                m_splits = splits;
+
+            RefreshSegments();
+            SelectSegmentByTime(TimeSpan.Zero);
         }
 
         private void OnAudioStart(AudioPlayer audioPlayer, TimeSpan length)
@@ -73,9 +72,10 @@ namespace AmateurRadioNewsline
 
         private void OnAudioTick(AudioPlayer audioPlayer, TimeSpan position)
         {
-            if (position >= m_autoPauseValue)
+            if (position >= m_autoPauseValue && m_audioPlayer.play)
             {
                 m_audioPlayer.play = false;
+                NextSegment();
             }
             m_progressBar.Value = (int)position.TotalMilliseconds;
             m_currentTime.Text = position.ToString(@"hh\:mm\:ss\.f");
@@ -88,7 +88,7 @@ namespace AmateurRadioNewsline
 
         private void OnIDDone(AudioPlayer audioPlayer)
         {
-            Forward();
+            NextSegment();
         }
 
         private void OnNewAudioOut(object sender, EventArgs e)
@@ -128,13 +128,14 @@ namespace AmateurRadioNewsline
                 m_totalTime.Text = m_audioPlayer.waveStream.TotalTime.ToString(@"hh\:mm\:ss\.f");
 
                 Properties.Settings.Default.Filename = m_filename.Text;
-                m_segments.Items.Clear();
+                m_pauses.Items.Clear();
                 foreach (var segment in m_audioPlayer.waveStream.Split())
                 {
-                    m_segments.Items.Add(segment);
+                    m_pauses.Items.Add(segment);
                 }
 
-                m_pauses.Items.Clear();
+                m_splits.Clear();
+                RefreshSegments();
             }
             catch
             {
@@ -145,10 +146,6 @@ namespace AmateurRadioNewsline
         private void OnPlayButtonChanged(object sender, EventArgs e)
         {
             m_audioPlayer.play = m_playButton.Checked;
-            if(m_playButton.Checked)
-            {
-                SetAutoPause();
-            }
         }
 
         private void OnTestPTT(object sender, EventArgs e)
@@ -168,64 +165,47 @@ namespace AmateurRadioNewsline
 
         private void OnSaveSettings(object sender, EventArgs e)
         {
-            Properties.Settings.Default.Pauses = m_pauses.Items.Cast<Segment>().ToList().SerializeToString();
+            Properties.Settings.Default.Splits = m_splits.SerializeToString();
             Properties.Settings.Default.Save();
         }
 
-        private void SetTime(Segment? segment)
+        private void SelectSegment()
         {
-            if (m_audioPlayer.waveStream is WaveStream waveStream)
+            if (m_segments.SelectedItem is Segment segment)
             {
-                waveStream.CurrentTime = segment?.end ?? TimeSpan.Zero;
+                m_autoPause.Text = segment.end.ToString("mm\\:ss\\.f");
+                m_autoPauseValue = segment.end;
+                if (m_audioPlayer.waveStream is WaveStream waveStream)
+                    waveStream.CurrentTime = segment.start;
             }
         }
-        private Segment FindPause()
-        {
-            TimeSpan current = m_audioPlayer.waveStream?.CurrentTime ?? TimeSpan.Zero;
-            foreach (Segment pause in m_pauses.Items)
-                if (pause.start > current)
-                    return pause;
-            return new Segment() { start = m_audioPlayer.waveStream?.TotalTime ?? TimeSpan.Zero, duration = TimeSpan.Zero };
-        }
-        private void SetAutoPause()
-        {
-            SetAutoPause(FindPause());
-        }
-        private void SetAutoPause(Segment segment)
-        {
-            m_autoPause.Text = segment.start.ToString();
-            m_autoPauseValue = segment.start + segment.duration;
-            m_pauses.SelectedItem = segment;
-        }
 
-        private void Back()
+        private void PrevSegment()
         {
-            if (m_pauses.SelectedIndex >= 0)
-                --m_pauses.SelectedIndex;
-            SetTime(m_pauses.SelectedItem as Segment?);
-        }
-
-        private void Forward()
-        {
-            if(m_audioPlayer.play)
+            if (m_segments.SelectedIndex >= 0)
             {
-                SetTime(m_pauses.SelectedItem as Segment?);
+                --m_segments.SelectedIndex;
+                SelectSegment();
             }
-            else
+        }
+
+        private void NextSegment()
+        {
+            if (m_segments.SelectedIndex < m_segments.Items.Count - 1)
             {
-                if (m_pauses.SelectedIndex < m_pauses.Items.Count - 1)
-                    ++m_pauses.SelectedIndex;
+                ++m_segments.SelectedIndex;
+                SelectSegment();
             }
         }
 
         private void OnBackwardClick(object sender, EventArgs e)
         {
-            Back();
+            PrevSegment();
         }
 
         private void OnForward(object sender, EventArgs e)
         {
-            Forward();
+            NextSegment();
         }
 
         private void OnSoftForward(object sender, EventArgs e)
@@ -316,67 +296,67 @@ namespace AmateurRadioNewsline
             }
         }
 
-        private void ClearAutoPause()
+        private void OnSegmentSelected(object sender, EventArgs e)
         {
-            m_autoPause.Text = String.Empty;
-            m_autoPauseValue = TimeSpan.MaxValue;
-            m_pauses.SelectedItem = null;
         }
 
-        private void OnPausesSelected(object sender, EventArgs e)
+        private void OnSegmentsDoubleClick(object sender, EventArgs e)
         {
-            if (m_pauses.SelectedItem is Segment segment)
-            {
-                SetAutoPause(segment);
-            }
+            SelectSegment();
         }
 
         private void OnPausesDoubleClick(object sender, EventArgs e)
         {
             if (m_pauses.SelectedItem is Segment segment && m_audioPlayer.waveStream is WaveStream waveStream)
             {
-                waveStream.CurrentTime = segment.end;
-            }
-        }
-
-        private void OnSegmentsDoubleClick(object sender, EventArgs e)
-        {
-            if (e is MouseEventArgs me)
-            {
-                int index = m_segments.IndexFromPoint(me.Location);
-                if (index != ListBox.NoMatches)
-                {
-                    if (m_segments.Items[index] is Segment segment)
-                    {
-                        if (Control.ModifierKeys == Keys.None)
-                        {
-                            if (m_audioPlayer.waveStream is WaveStream)
-                            {
-                                m_audioPlayer.waveStream.CurrentTime = segment.start;
-                            }
-                        }
-                        else
-                        {
-                            SetAutoPause(segment);
-                        }
-                    }
-                }
+                waveStream.CurrentTime = segment.start;
             }
         }
 
         private void OnAddPause(object sender, EventArgs e)
         {
-            if (m_segments.SelectedItem is Segment segment)
+            if (m_pauses.SelectedItem is Segment segment)
             {
-                if (!m_pauses.Items.Contains(segment))
+                if (!m_splits.Contains(segment.end))
                 {
-                    m_pauses.Items.Add(segment);
+                    m_splits.Add(segment.end);
+                    m_splits.Sort();
+                    RefreshSegments();
+                    SelectSegmentByTime(segment.end);
                 }
-                m_pauses.SelectedItem = segment;
             }
+        }
+
+        private void RefreshSegments()
+        {
+            m_segments.Items.Clear();
+            if (m_audioPlayer.waveStream is WaveStream waveStream)
+            {
+                TimeSpan current = TimeSpan.Zero;
+                foreach (TimeSpan split in m_splits)
+                {
+                    m_segments.Items.Add(new Segment { start = current, duration = split - current });
+                    current = split;
+                }
+                m_segments.Items.Add(new Segment { start = current, duration = waveStream.TotalTime - current });
+            }
+        }
+
+        private void SelectSegmentByTime(TimeSpan time)
+        {
+            for (int i = 0; i < m_segments.Items.Count; i++)
+            {
+                if (m_segments.Items[i] is Segment segment && segment.end > time)
+                {
+                    m_segments.SelectedIndex = i;
+                    break;
+                }
+            }
+            SelectSegment();
         }
 
         private AudioPlayer m_audioPlayer = new AudioPlayer();
         private TimeSpan m_autoPauseValue = TimeSpan.MaxValue;
+        private List<TimeSpan> m_splits = new List<TimeSpan>();
     }
 }

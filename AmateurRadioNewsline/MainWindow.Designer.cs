@@ -46,11 +46,11 @@
             m_timeoutLabel = new Label();
             m_timeout = new TextBox();
             m_timeLeft = new TextBox();
-            m_segments = new ListBox();
+            m_pauses = new ListBox();
             m_nextPauseButton = new Button();
             m_backward = new Button();
             m_autoPause = new TextBox();
-            m_pauses = new ListBox();
+            m_segments = new ListBox();
             m_forwardButton1 = new Button();
             m_forwardButton2 = new Button();
             m_forwardButton3 = new Button();
@@ -252,16 +252,16 @@
             // 
             // m_segments
             // 
-            m_segments.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
-            m_segments.FormattingEnabled = true;
-            m_segments.ItemHeight = 15;
-            m_segments.Location = new Point(618, 10);
-            m_segments.Margin = new Padding(4, 3, 4, 3);
-            m_segments.Name = "m_segments";
-            m_segments.Size = new Size(240, 724);
-            m_segments.Sorted = true;
-            m_segments.TabIndex = 22;
-            m_segments.DoubleClick += OnSegmentsDoubleClick;
+            m_pauses.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            m_pauses.FormattingEnabled = true;
+            m_pauses.ItemHeight = 15;
+            m_pauses.Location = new Point(618, 10);
+            m_pauses.Margin = new Padding(4, 3, 4, 3);
+            m_pauses.Name = "m_segments";
+            m_pauses.Size = new Size(240, 724);
+            m_pauses.Sorted = true;
+            m_pauses.TabIndex = 22;
+            m_pauses.DoubleClick += OnPausesDoubleClick;
             // 
             // m_nextPauseButton
             // 
@@ -296,17 +296,17 @@
             // 
             // m_pauses
             // 
-            m_pauses.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
-            m_pauses.FormattingEnabled = true;
-            m_pauses.ItemHeight = 15;
-            m_pauses.Location = new Point(102, 310);
-            m_pauses.Margin = new Padding(4, 3, 4, 3);
-            m_pauses.Name = "m_pauses";
-            m_pauses.Size = new Size(240, 424);
-            m_pauses.Sorted = true;
-            m_pauses.TabIndex = 26;
-            m_pauses.SelectedIndexChanged += OnPausesSelected;
-            m_pauses.DoubleClick += OnPausesDoubleClick;
+            m_segments.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            m_segments.FormattingEnabled = true;
+            m_segments.ItemHeight = 15;
+            m_segments.Location = new Point(102, 310);
+            m_segments.Margin = new Padding(4, 3, 4, 3);
+            m_segments.Name = "m_pauses";
+            m_segments.Size = new Size(240, 424);
+            m_segments.Sorted = true;
+            m_segments.TabIndex = 26;
+            m_segments.SelectedIndexChanged += OnSegmentSelected;
+            m_segments.DoubleClick += OnSegmentsDoubleClick;
             // 
             // m_forwardButton1
             // 
@@ -456,11 +456,11 @@
             Controls.Add(m_forwardButton3);
             Controls.Add(m_forwardButton2);
             Controls.Add(m_forwardButton1);
-            Controls.Add(m_pauses);
+            Controls.Add(m_segments);
             Controls.Add(m_autoPause);
             Controls.Add(m_backward);
             Controls.Add(m_nextPauseButton);
-            Controls.Add(m_segments);
+            Controls.Add(m_pauses);
             Controls.Add(m_timeLeft);
             Controls.Add(m_timeout);
             Controls.Add(m_timeoutLabel);
@@ -506,11 +506,11 @@
         private Label m_timeoutLabel;
         private TextBox m_timeout;
         private TextBox m_timeLeft;
-        private ListBox m_segments;
+        private ListBox m_pauses;
         private Button m_nextPauseButton;
         private Button m_backward;
         private TextBox m_autoPause;
-        private ListBox m_pauses;
+        private ListBox m_segments;
         private Button m_forwardButton1;
         private Button m_forwardButton2;
         private Button m_forwardButton3;
