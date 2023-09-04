@@ -58,7 +58,7 @@ namespace AmateurRadioNewsline
             m_timeout.Text = Properties.Settings.Default.Timeout.ToString();
             m_IDSkip.Text = Properties.Settings.Default.IDSkip.ToString(@"hh\:mm\:ss\.fff");
 
-            if (DeserializeObject<List<Segment>>(Properties.Settings.Default.Pauses) is List<Segment> pauses)
+            if (Properties.Settings.Default.Pauses.Deserialize<List<Segment>>() is List<Segment> pauses)
             {
                 foreach (var pause in pauses)
                 {
@@ -67,25 +67,8 @@ namespace AmateurRadioNewsline
             }
         }
 
-        private Segment FindLastBetween(TimeSpan begin, TimeSpan end)
-        {
-            for (int i = m_pauses.Items.Count; i-- > 0;)
-            {
-                if (m_pauses.Items[i] is Segment segment)
-                {
-                    if (segment.start <= begin) break;
-                    if (segment.start < end) return segment;
-                }
-            }
-            return new Segment() { start = m_audioPlayer.waveStream?.TotalTime ?? TimeSpan.Zero, duration = TimeSpan.Zero };
-        }
-
         private void OnAudioStart(AudioPlayer audioPlayer, TimeSpan length)
         {
-            if (m_audioPlayer.waveStream is WaveStream)
-            {
-                SetAutoPause(FindLastBetween(m_audioPlayer.waveStream.CurrentTime, m_audioPlayer.waveStream.CurrentTime + m_audioPlayer.timeout));
-            }
         }
 
         private void OnAudioTick(AudioPlayer audioPlayer, TimeSpan position)
@@ -105,12 +88,7 @@ namespace AmateurRadioNewsline
 
         private void OnIDDone(AudioPlayer audioPlayer)
         {
-            TimeSpan idskip;
-            if (TimeSpan.TryParse(m_IDSkip.Text, out idskip))
-            {
-                if (m_audioPlayer.waveStream is WaveStream)
-                    m_audioPlayer.waveStream.CurrentTime = idskip;
-            }
+            Forward();
         }
 
         private void OnNewAudioOut(object sender, EventArgs e)
@@ -141,30 +119,11 @@ namespace AmateurRadioNewsline
             }
         }
 
-        private List<Segment>? GetPauses()
-        {
-            if (m_filenameValid)
-            {
-                if (Properties.Settings.Default.Pauses == null)
-                {
-                    //Properties.Settings.Default.Pauses = new Pauses();
-                }
-                //if (!pauses.ContainsKey(m_filename.Text))
-                //{
-                //    pauses.Add(m_filename.Text, new List<Segment>());
-                //}
-                //return pauses[m_filename.Text];
-            }
-            return null;
-        }
-
         private void OnFilenameChanged(object sender, EventArgs e)
         {
-            m_filenameValid = false;
             try
             {
                 m_audioPlayer.waveStream = new Mp3FileReader(m_filename.Text);
-                m_filenameValid = true;
                 m_progressBar.Maximum = (int)m_audioPlayer.waveStream.TotalTime.TotalMilliseconds;
                 m_totalTime.Text = m_audioPlayer.waveStream.TotalTime.ToString(@"hh\:mm\:ss\.f");
 
@@ -176,13 +135,6 @@ namespace AmateurRadioNewsline
                 }
 
                 m_pauses.Items.Clear();
-                if (GetPauses() is List<Segment> pauses)
-                {
-                    foreach (var pause in pauses)
-                    {
-                        m_pauses.Items.Add(pause);
-                    }
-                }
             }
             catch
             {
@@ -193,6 +145,10 @@ namespace AmateurRadioNewsline
         private void OnPlayButtonChanged(object sender, EventArgs e)
         {
             m_audioPlayer.play = m_playButton.Checked;
+            if(m_playButton.Checked)
+            {
+                SetAutoPause();
+            }
         }
 
         private void OnTestPTT(object sender, EventArgs e)
@@ -210,62 +166,72 @@ namespace AmateurRadioNewsline
             Properties.Settings.Default.Callsign = m_callsign.Text;
         }
 
-        static string SerializeObject<T>(T obj) where T : notnull
-        {
-            using (StringWriter textWriter = new StringWriter())
-            {
-                new XmlSerializer(obj.GetType()).Serialize(textWriter, obj);
-                return textWriter.ToString();
-            }
-        }
-        static T? DeserializeObject<T>(String s)
-        {
-            try
-            {
-                using (StringReader textReader = new StringReader(s))
-                    if (new XmlSerializer(typeof(T)).Deserialize(textReader) is T result)
-                        return result;
-            }
-            catch { }
-            return default(T);
-        }
-
         private void OnSaveSettings(object sender, EventArgs e)
         {
-            Properties.Settings.Default.Pauses = SerializeObject(m_pauses.Items.Cast<Segment>().ToList());
+            Properties.Settings.Default.Pauses = m_pauses.Items.Cast<Segment>().ToList().SerializeToString();
             Properties.Settings.Default.Save();
+        }
+
+        private void SetTime(Segment? segment)
+        {
+            if (m_audioPlayer.waveStream is WaveStream waveStream)
+            {
+                waveStream.CurrentTime = segment?.end ?? TimeSpan.Zero;
+            }
+        }
+        private Segment FindPause()
+        {
+            TimeSpan current = m_audioPlayer.waveStream?.CurrentTime ?? TimeSpan.Zero;
+            foreach (Segment pause in m_pauses.Items)
+                if (pause.start > current)
+                    return pause;
+            return new Segment() { start = m_audioPlayer.waveStream?.TotalTime ?? TimeSpan.Zero, duration = TimeSpan.Zero };
+        }
+        private void SetAutoPause()
+        {
+            SetAutoPause(FindPause());
+        }
+        private void SetAutoPause(Segment segment)
+        {
+            m_autoPause.Text = segment.start.ToString();
+            m_autoPauseValue = segment.start + segment.duration;
+            m_pauses.SelectedItem = segment;
+        }
+
+        private void Back()
+        {
+            if (m_pauses.SelectedIndex >= 0)
+                --m_pauses.SelectedIndex;
+            SetTime(m_pauses.SelectedItem as Segment?);
+        }
+
+        private void Forward()
+        {
+            if(m_audioPlayer.play)
+            {
+                SetTime(m_pauses.SelectedItem as Segment?);
+            }
+            else
+            {
+                if (m_pauses.SelectedIndex < m_pauses.Items.Count - 1)
+                    ++m_pauses.SelectedIndex;
+            }
         }
 
         private void OnBackwardClick(object sender, EventArgs e)
         {
-            if (m_audioPlayer.waveStream is WaveStream)
-            {
-                if (m_audioPlayer.waveStream.CurrentTime > m_autoPauseValue)
-                {
-                    m_audioPlayer.waveStream.CurrentTime = m_autoPauseValue;
-
-                }
-            }
+            Back();
         }
 
         private void OnForward(object sender, EventArgs e)
         {
-            if (m_audioPlayer.waveStream is WaveStream)
-            {
-                if (m_audioPlayer.waveStream.CurrentTime < m_autoPauseValue)
-                {
-                    m_audioPlayer.waveStream.CurrentTime = m_autoPauseValue;
-
-                }
-            }
+            Forward();
         }
 
         private void OnSoftForward(object sender, EventArgs e)
         {
-            if (m_audioPlayer.waveStream is WaveStream)
-            {
-                m_audioPlayer.waveStream.CurrentTime = m_autoPauseValue - new TimeSpan(0, 0, 5);
-            }
+            if (m_audioPlayer.waveStream is WaveStream waveStream)
+                waveStream.CurrentTime = m_autoPauseValue - new TimeSpan(0, 0, 5);
         }
 
         private void OnTimeoutChanged(object sender, EventArgs e)
@@ -350,13 +316,6 @@ namespace AmateurRadioNewsline
             }
         }
 
-        private void SetAutoPause(Segment segment)
-        {
-            m_autoPause.Text = segment.start.ToString();
-            m_autoPauseValue = segment.start + segment.duration;
-            m_pauses.SelectedItem = segment;
-        }
-
         private void ClearAutoPause()
         {
             m_autoPause.Text = String.Empty;
@@ -374,7 +333,10 @@ namespace AmateurRadioNewsline
 
         private void OnPausesDoubleClick(object sender, EventArgs e)
         {
-            ClearAutoPause();
+            if (m_pauses.SelectedItem is Segment segment && m_audioPlayer.waveStream is WaveStream waveStream)
+            {
+                waveStream.CurrentTime = segment.end;
+            }
         }
 
         private void OnSegmentsDoubleClick(object sender, EventArgs e)
@@ -402,10 +364,6 @@ namespace AmateurRadioNewsline
             }
         }
 
-        private AudioPlayer m_audioPlayer = new AudioPlayer();
-        private TimeSpan m_autoPauseValue = TimeSpan.MaxValue;
-        private bool m_filenameValid = false;
-
         private void OnAddPause(object sender, EventArgs e)
         {
             if (m_segments.SelectedItem is Segment segment)
@@ -417,5 +375,8 @@ namespace AmateurRadioNewsline
                 m_pauses.SelectedItem = segment;
             }
         }
+
+        private AudioPlayer m_audioPlayer = new AudioPlayer();
+        private TimeSpan m_autoPauseValue = TimeSpan.MaxValue;
     }
 }

@@ -7,18 +7,6 @@ using System.Threading.Tasks;
 
 namespace AmateurRadioNewsline
 {
-    struct Segment
-    {
-        public TimeSpan start;
-        public TimeSpan duration;
-
-        public override String ToString()
-        {
-            return $"{start:hh\\:mm\\:ss\\.fff} / {duration:ss\\.fff}";
-        }
-    }
-
-
     static class WaveStreamUtils
     {
         public static byte[] ReadAll(this WaveStream input)
