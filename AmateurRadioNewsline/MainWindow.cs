@@ -34,6 +34,20 @@ namespace AmateurRadioNewsline
                 }
             }
 
+            for (int n = 0; n < WaveIn.DeviceCount; n++)
+            {
+                var cap = WaveOut.GetCapabilities(n);
+                if (cap.Channels == 2)
+                {
+                    Console.WriteLine(cap.Channels);
+                }
+                else
+                {
+                    Console.WriteLine(cap.Channels);
+                }
+            }
+
+
             for (int n = 0; n < WaveOut.DeviceCount; n++)
             {
                 var name = $"{n}:{WaveOut.GetCapabilities(n).ProductName}";

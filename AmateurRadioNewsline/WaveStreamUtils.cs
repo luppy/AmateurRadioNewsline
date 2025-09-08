@@ -21,8 +21,8 @@ namespace AmateurRadioNewsline
 
         public static List<Segment> Split(this WaveStream input)
         {
-            const short Threshold = 1024;
-            int MinLength = (int)Math.Round(input.WaveFormat.AverageBytesPerSecond * 0.25);
+            const short Threshold = 2048;
+            int MinLength = (int)Math.Round(input.WaveFormat.AverageBytesPerSecond * 0.1);
 
             byte[] buffer = input.ReadAll();
             double bytesPerSec = input.WaveFormat.AverageBytesPerSecond;
